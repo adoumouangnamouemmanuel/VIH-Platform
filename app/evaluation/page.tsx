@@ -120,7 +120,7 @@ export default function EvaluationPage() {
   }
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-indigo-950 z-0" />
 
@@ -128,7 +128,7 @@ export default function EvaluationPage() {
       <FloatingParticles />
 
       {/* Content */}
-      <div className="relative z-10 pt-24 px-4">
+      <div className="relative z-10 pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-4xl">
           {/* Header */}
           <motion.div
