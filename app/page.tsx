@@ -84,7 +84,7 @@ export default function Home() {
                     className={`absolute inset-0 bg-gradient-to-r ${slide.color} opacity-80 z-10`}
                     style={{ mixBlendMode: "multiply" }}
                   ></div>
-                  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center opacity-40"></div>
+                  <div className="absolute inset-0 bg-[url('https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FHIV&psig=AOvVaw0vtnCHD4dpm2-5YseZdtGO&ust=1748273018596000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCOCB1df2vo0DFQAAAAAdAAAAABAV')] bg-cover bg-center opacity-40"></div>
                 </motion.div>
               ),
           )}
@@ -153,7 +153,7 @@ export default function Home() {
             >
               <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
-                <Image src="/placeholder.svg?height=1000&width=800" alt="Dépistage VIH" fill className="object-cover" />
+                <Image src="hiv.jpg" alt="Dépistage VIH" fill className="object-cover" />
               </div>
             </motion.div>
           </div>
