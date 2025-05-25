@@ -146,3 +146,42 @@ export function getRealTimeSuggestions(input: string): string[] {
 
   return suggestions.slice(0, 4)
 }
+
+// Fonction pour obtenir des suggestions contextuelles basées sur la réponse et la catégorie
+export function getContextualSuggestions(response: string, category?: string): string[] {
+  const suggestions: string[] = []
+
+  // Suggestions basées sur la catégorie
+  if (category) {
+    const categoryData = chatbotDatabase.filter((data) => data.category === category)
+    categoryData.forEach((data) => {
+      data.relatedQuestions.forEach((question) => {
+        if (!suggestions.includes(question) && suggestions.length < 4) {
+          suggestions.push(question)
+        }
+      })
+    })
+  }
+
+  // Si pas assez de suggestions, ajouter des suggestions générales
+  if (suggestions.length < 4) {
+    const generalSuggestions = [
+      "Où faire un test de dépistage ?",
+      "Le dépistage est-il gratuit ?",
+      "Quels sont les symptômes du VIH ?",
+      "Comment se protéger du VIH ?",
+      "Combien de temps pour avoir les résultats ?",
+      "Le test est-il confidentiel ?",
+      "Qu'est-ce que la PrEP ?",
+      "VIH et grossesse",
+    ]
+
+    generalSuggestions.forEach((suggestion) => {
+      if (!suggestions.includes(suggestion) && suggestions.length < 4) {
+        suggestions.push(suggestion)
+      }
+    })
+  }
+
+  return suggestions.slice(0, 4)
+}

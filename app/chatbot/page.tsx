@@ -1,25 +1,31 @@
 "use client"
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { AnimatePresence, motion } from "framer-motion"
 import {
-  Send,
-  User,
-  Info,
-  Sparkles,
-  Heart,
-  MapPin,
-  Phone,
   Clock,
-  X,
-  Minimize2,
+  Heart,
+  Info,
+  MapPin,
   Maximize2,
   MessageCircle,
+  Minimize2,
+  Phone,
+  Send,
+  Sparkles,
+  User,
+  X,
 } from "lucide-react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
+
+import {
+  generateIntelligentResponse,
+  getContextualSuggestions,
+  getRealTimeSuggestions,
+} from "@/components/chatbot/chatbot-engine"
 
 // Mock responses adapted for Niger/Africa context
 const mockResponses: Record<string, string> = {
@@ -95,6 +101,14 @@ export default function ChatbotPage() {
   const [showSuggestions, setShowSuggestions] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const [realTimeSuggestions, setRealTimeSuggestions] = useState<string[]>([])
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([
+    "Où faire un test de dépistage à Niamey ?",
+    "Le dépistage est-il gratuit au Niger ?",
+    "Quels sont les symptômes du VIH ?",
+    "Comment se protéger du VIH ?",
+  ])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -103,45 +117,8 @@ export default function ChatbotPage() {
     scrollToBottom()
   }, [messages])
 
-  const generateBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase()
-
-    // Enhanced keyword matching for Niger context
-    if (input.includes("bonjour") || input.includes("salut") || input.includes("hello") || input.includes("bonsoir")) {
-      return mockResponses["bonjour"]
-    } else if (input.includes("niamey") && input.includes("centre")) {
-      return "À Niamey, vous pouvez vous rendre à : l'Hôpital National de Niamey (Route de Tillabéri), le Centre CEGIDD de Niamey (Quartier Plateau), le Centre de Santé de Gamkalé, ou la Maternité Issaka Gazoby. Tous offrent des tests gratuits et confidentiels. Voulez-vous les horaires d'ouverture ?"
-    } else if (input.includes("zinder") && input.includes("centre")) {
-      return "À Zinder, vous pouvez faire un test au Centre Hospitalier Régional de Zinder, au Centre de Santé Urbain de Zinder, ou au Centre CEGIDD de Zinder. Tous ces centres offrent des services gratuits et confidentiels."
-    } else if (input.includes("urgence") || input.includes("numéro")) {
-      return "Numéros d'urgence au Niger : Ligne VIH/SIDA : 15 15 (gratuit), CNLS Niger : +227 20 72 29 42, SOS Médecins Niamey : +227 96 88 88 88. En cas d'exposition récente au VIH, rendez-vous immédiatement à l'Hôpital National de Niamey pour un traitement post-exposition (TPE)."
-    } else if (input.includes("soutien") || input.includes("psychologique")) {
-      return "Au Niger, un soutien psychologique est disponible : Association Nigérienne de Lutte contre le SIDA (ANLS), Réseau des Personnes Vivant avec le VIH (RNP+), et services de conseil dans tous les centres de dépistage. Des groupes de parole sont organisés régulièrement à Niamey et dans les grandes villes."
-    } else if (input.includes("test") || input.includes("dépistage")) {
-      return mockResponses["test"]
-    } else if (input.includes("symptôme") || input.includes("signe")) {
-      return mockResponses["symptômes"]
-    } else if (input.includes("centre") || input.includes("où")) {
-      return mockResponses["centres"]
-    } else if (input.includes("confidentiel") || input.includes("anonyme")) {
-      return mockResponses["confidentialité"]
-    } else if (input.includes("résultat") || input.includes("combien de temps")) {
-      return mockResponses["résultats"]
-    } else if (input.includes("prévention") || input.includes("protéger")) {
-      return mockResponses["prévention"]
-    } else if (input.includes("traitement") || input.includes("médicament")) {
-      return mockResponses["traitement"]
-    } else if (input.includes("prep")) {
-      return mockResponses["prep"]
-    } else if (input.includes("grossesse") || input.includes("enceinte")) {
-      return mockResponses["grossesse"]
-    } else if (input.includes("gratuit") || input.includes("coût") || input.includes("prix")) {
-      return mockResponses["coût"]
-    } else if (input.includes("fenêtre") || input.includes("période")) {
-      return mockResponses["fenêtre"]
-    } else {
-      return mockResponses["default"]
-    }
+  const generateBotResponse = (userInput: string): { response: string; relatedQuestions: string[] } => {
+    return generateIntelligentResponse(userInput)
   }
 
   const handleSendMessage = (messageText?: string) => {
@@ -160,6 +137,7 @@ export default function ChatbotPage() {
     setInputValue("")
     setIsTyping(true)
     setShowSuggestions(false)
+    setRealTimeSuggestions([])
 
     // Simulate bot thinking with realistic delay
     setTimeout(() => {
@@ -176,21 +154,23 @@ export default function ChatbotPage() {
       // Generate and add bot response after typing simulation
       setTimeout(
         () => {
-          const botResponse = generateBotResponse(textToSend)
+          const { response, relatedQuestions } = generateBotResponse(textToSend)
           const botMessage: Message = {
             id: Date.now().toString(),
-            content: botResponse,
+            content: response,
             sender: "bot",
             timestamp: new Date(),
           }
 
           setMessages((prev) => prev.filter((msg) => !msg.typing).concat([botMessage]))
           setIsTyping(false)
-          // Always show suggestions after bot response
+
+          // Mettre à jour les suggestions contextuelles
+          setCurrentSuggestions(relatedQuestions || getContextualSuggestions(response))
           setShowSuggestions(true)
         },
         1500 + Math.random() * 1000,
-      ) // Variable typing time
+      )
     }, 500)
   }
 
@@ -205,6 +185,19 @@ export default function ChatbotPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     handleSendMessage()
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setInputValue(value)
+
+    // Générer des suggestions en temps réel
+    if (value.length >= 2) {
+      const suggestions = getRealTimeSuggestions(value)
+      setRealTimeSuggestions(suggestions)
+    } else {
+      setRealTimeSuggestions([])
+    }
   }
 
   return (
@@ -515,7 +508,7 @@ export default function ChatbotPage() {
 
                   {/* Suggestions */}
                   <AnimatePresence>
-                    {showSuggestions && (
+                    {(showSuggestions || realTimeSuggestions.length > 0) && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
@@ -523,20 +516,22 @@ export default function ChatbotPage() {
                         className="px-4 py-2 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
                       >
                         <div className="flex flex-wrap gap-1">
-                          {suggestedQuestions.slice(0, 4).map((question, index) => (
-                            <motion.button
-                              key={index}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: index * 0.05 }}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleSuggestedQuestion(question)}
-                              className="text-xs px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 transition-colors"
-                            >
-                              {question.length > 25 ? question.substring(0, 25) + "..." : question}
-                            </motion.button>
-                          ))}
+                          {(realTimeSuggestions.length > 0 ? realTimeSuggestions : currentSuggestions)
+                            .slice(0, 4)
+                            .map((question, index) => (
+                              <motion.button
+                                key={index}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleSuggestedQuestion(question)}
+                                className="text-xs px-2 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 transition-colors"
+                              >
+                                {question.length > 25 ? question.substring(0, 25) + "..." : question}
+                              </motion.button>
+                            ))}
                         </div>
                       </motion.div>
                     )}
@@ -549,7 +544,7 @@ export default function ChatbotPage() {
                         type="text"
                         placeholder="Tapez votre message..."
                         value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
+                        onChange={handleInputChange}
                         className="flex-1 rounded-full border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500 text-sm"
                         disabled={isTyping}
                       />
