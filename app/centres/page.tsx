@@ -1,63 +1,107 @@
 "use client"
 
 import type React from "react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Building2, ChevronRight, Clock, ExternalLink, Info, MapPin, Phone, Search } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Info, ChevronRight, Sparkles } from "lucide-react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import SearchSection from "@/components/centres/search-section"
+import CentreCard from "@/components/centres/centre-card"
+import StatsBanner from "@/components/centres/stats-banner"
 
-// Mock data for testing
+// Mock data for Niger context
 const centresData = [
   {
     id: 1,
-    name: "Centre de Dépistage Paris Centre",
-    address: "15 Rue de Rivoli, 75004 Paris",
-    phone: "01 42 72 88 99",
-    hours: "Lun-Ven: 9h-18h, Sam: 10h-16h",
-    services: ["Test VIH", "Conseil", "Dépistage anonyme"],
-    coordinates: [48.856614, 2.3522219] as [number, number],
+    name: "Centre de Dépistage Volontaire de Niamey",
+    address: "Avenue de la République, Plateau, Niamey",
+    phone: "+227 20 72 35 41",
+    hours: "Lun-Ven: 8h-17h, Sam: 9h-13h",
+    services: ["Test VIH", "Conseil", "Dépistage anonyme", "Suivi médical"],
+    coordinates: [13.5116, 2.1254] as [number, number],
+    rating: 4.8,
+    distance: "1.2 km",
   },
   {
     id: 2,
-    name: "Hôpital Saint-Louis - Service Maladies Infectieuses",
-    address: "1 Avenue Claude Vellefaux, 75010 Paris",
-    phone: "01 42 49 49 49",
-    hours: "Lun-Ven: 8h30-17h",
-    services: ["Test VIH", "Suivi médical", "Consultation spécialisée"],
-    coordinates: [48.8748, 2.3684] as [number, number],
+    name: "Hôpital National de Niamey - Service IST/VIH",
+    address: "Boulevard Mali Béro, Niamey",
+    phone: "+227 20 73 41 56",
+    hours: "Lun-Ven: 7h30-16h30",
+    services: ["Test VIH", "Traitement ARV", "Consultation spécialisée", "Suivi biologique"],
+    coordinates: [13.5137, 2.1098] as [number, number],
+    rating: 4.6,
+    distance: "2.8 km",
   },
   {
     id: 3,
-    name: "CeGIDD Lyon",
-    address: "5 Rue du Griffon, 69001 Lyon",
-    phone: "04 72 07 17 17",
-    hours: "Lun-Ven: 9h-17h",
-    services: ["Test VIH", "Dépistage IST", "Consultation anonyme"],
-    coordinates: [45.7578, 4.832] as [number, number],
+    name: "Centre de Santé Intégré de Zinder",
+    address: "Quartier Sabon Gari, Zinder",
+    phone: "+227 20 51 04 23",
+    hours: "Lun-Ven: 8h-16h",
+    services: ["Test VIH", "Dépistage IST", "Consultation anonyme", "Prévention"],
+    coordinates: [13.8069, 8.9881] as [number, number],
+    rating: 4.5,
+    distance: "485 km",
   },
   {
     id: 4,
-    name: "Centre de Santé Sexuelle - Marseille",
-    address: "34 Boulevard Baille, 13006 Marseille",
-    phone: "04 13 31 69 55",
-    hours: "Lun-Jeu: 9h-17h, Ven: 9h-16h",
-    services: ["Test VIH", "Préservatifs gratuits", "Conseil"],
-    coordinates: [43.2965, 5.3698] as [number, number],
+    name: "Hôpital Régional de Maradi",
+    address: "Route de l'Aéroport, Maradi",
+    phone: "+227 20 41 02 67",
+    hours: "Lun-Jeu: 8h-17h, Ven: 8h-16h",
+    services: ["Test VIH", "Conseil conjugal", "PTME", "Suivi pédiatrique"],
+    coordinates: [13.5, 7.1017] as [number, number],
+    rating: 4.4,
+    distance: "312 km",
   },
   {
     id: 5,
-    name: "CeGIDD Bordeaux",
-    address: "Rue de Belfort, 33000 Bordeaux",
-    phone: "05 57 22 46 66",
-    hours: "Lun-Ven: 9h-17h",
-    services: ["Test VIH", "Dépistage IST", "PrEP"],
-    coordinates: [44.8378, -0.5792] as [number, number],
+    name: "Centre de Dépistage de Tahoua",
+    address: "Quartier Administratif, Tahoua",
+    phone: "+227 20 61 03 89",
+    hours: "Lun-Ven: 8h-16h",
+    services: ["Test VIH", "Dépistage IST", "Sensibilisation", "Formation"],
+    coordinates: [14.8888, 5.2692] as [number, number],
+    rating: 4.3,
+    distance: "418 km",
+  },
+  {
+    id: 6,
+    name: "Dispensaire d'Agadez",
+    address: "Centre-ville, Agadez",
+    phone: "+227 20 44 01 78",
+    hours: "Lun-Ven: 8h-15h",
+    services: ["Test VIH", "Conseil", "Orientation médicale"],
+    coordinates: [16.9719, 7.9911] as [number, number],
+    rating: 4.2,
+    distance: "921 km",
+  },
+  {
+    id: 7,
+    name: "Centre de Santé de Dosso",
+    address: "Quartier Plateau, Dosso",
+    phone: "+227 20 65 02 34",
+    hours: "Lun-Ven: 8h-16h30",
+    services: ["Test VIH", "Dépistage familial", "Suivi communautaire"],
+    coordinates: [13.049, 3.1939] as [number, number],
+    rating: 4.1,
+    distance: "145 km",
+  },
+  {
+    id: 8,
+    name: "Hôpital de District de Tillabéri",
+    address: "Route Nationale, Tillabéri",
+    phone: "+227 20 71 01 45",
+    hours: "Lun-Ven: 8h-16h",
+    services: ["Test VIH", "Conseil", "Référence médicale"],
+    coordinates: [14.2073, 1.4528] as [number, number],
+    rating: 4.0,
+    distance: "119 km",
   },
 ]
 
@@ -65,7 +109,7 @@ const centresData = [
 const Map = dynamic(() => import("@/components/map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[600px] bg-gray-100 dark:bg-gray-800 flex items-center justify-center rounded-xl">
+    <div className="h-[600px] bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center rounded-2xl">
       <div className="flex flex-col items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
         <p className="text-gray-600 dark:text-gray-400">Chargement de la carte...</p>
@@ -113,106 +157,81 @@ export default function CentresPage() {
     }
   }
 
-  const fadeIn = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3,
-      },
-    },
-  }
-
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4 bg-gradient-to-b from-indigo-50 to-white dark:from-gray-900 dark:to-gray-950">
-      <div className="container mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
-              Centres de Dépistage
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Trouvez le centre de dépistage le plus proche de chez vous pour effectuer un test VIH en toute
-              confidentialité.
-            </p>
+    <div className="min-h-screen pt-24 pb-16 px-4 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
+      {/* Background decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto relative">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-6">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Trouvez le centre le plus proche au Niger
           </div>
 
-          <div className="max-w-4xl mx-auto mb-8">
-            <Card className="border-0 shadow-lg dark:shadow-indigo-900/10 overflow-hidden">
-              <CardContent className="p-6">
-                <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
-                  <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder="Rechercher par ville ou nom de centre..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 rounded-full border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleGetUserLocation}
-                      disabled={isLocating}
-                      className="rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950"
-                    >
-                      {isLocating ? (
-                        <>
-                          <div className="animate-spin h-4 w-4 mr-2 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
-                          Localisation...
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="h-4 w-4 mr-2" />
-                          Me localiser
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      type="submit"
-                      className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
-                    >
-                      Rechercher
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+            Centres de Dépistage au Niger
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            Découvrez les centres de dépistage VIH dans toutes les régions du Niger.
+            <span className="text-indigo-600 dark:text-indigo-400 font-medium"> Confidentialité garantie</span>, prise
+            en charge professionnelle et résultats fiables.
+          </p>
+        </motion.div>
 
-          <Tabs defaultValue="map" className="max-w-6xl mx-auto">
-            <TabsList className="grid w-full grid-cols-2 mb-8 rounded-full p-1 bg-gray-100 dark:bg-gray-800">
+        {/* Stats Banner */}
+        <StatsBanner />
+
+        {/* Search Section */}
+        <SearchSection
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onSearch={handleSearch}
+          onGetLocation={handleGetUserLocation}
+          isLocating={isLocating}
+        />
+
+        {/* Main Content */}
+        <Tabs defaultValue="map" className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-8 rounded-2xl p-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-lg">
               <TabsTrigger
                 value="map"
-                className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white"
+                className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
               >
-                Carte
+                Vue Carte
               </TabsTrigger>
               <TabsTrigger
                 value="list"
-                className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-violet-600 data-[state=active]:text-white"
+                className="rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
               >
-                Liste
+                Vue Liste
               </TabsTrigger>
             </TabsList>
+          </motion.div>
 
-            <TabsContent value="map" className="mt-0">
-              <Card className="border-0 shadow-lg dark:shadow-indigo-900/10 overflow-hidden">
+          <TabsContent value="map" className="mt-0">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="h-[600px] rounded-xl overflow-hidden">
+                  <div className="h-[600px] rounded-2xl overflow-hidden">
                     <Map
                       centres={filteredCentres}
                       selectedCentre={selectedCentre}
@@ -222,218 +241,89 @@ export default function CentresPage() {
                   </div>
                 </CardContent>
               </Card>
-              {selectedCentre && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="mt-6"
-                >
-                  <Card className="border-0 shadow-lg dark:shadow-indigo-900/10">
-                    <CardHeader className="pb-2">
-                      <CardTitle>
-                        {filteredCentres.find((c) => c.id === selectedCentre)?.name || "Centre sélectionné"}
-                      </CardTitle>
-                      <CardDescription>
-                        {filteredCentres.find((c) => c.id === selectedCentre)?.address || ""}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start">
-                            <Phone className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-indigo-600" />
-                            <span>{filteredCentres.find((c) => c.id === selectedCentre)?.phone || ""}</span>
-                          </div>
-                          <div className="flex items-start">
-                            <Clock className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-indigo-600" />
-                            <span>{filteredCentres.find((c) => c.id === selectedCentre)?.hours || ""}</span>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium mb-2">Services:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {filteredCentres
-                              .find((c) => c.id === selectedCentre)
-                              ?.services.map((service, index) => (
-                                <span
-                                  key={index}
-                                  className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-1 rounded-full"
-                                >
-                                  {service}
-                                </span>
-                              ))}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                        <Button
-                          variant="outline"
-                          className="rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950"
-                          onClick={() =>
-                            window.open(
-                              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                filteredCentres.find((c) => c.id === selectedCentre)?.address || "",
-                              )}`,
-                              "_blank",
-                            )
-                          }
-                        >
-                          Voir sur Google Maps
-                          <ExternalLink className="ml-2 h-3 w-3" />
-                        </Button>
-                        <Button
-                          className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
-                          onClick={() => {
-                            // Simulate booking appointment
-                            alert("Fonctionnalité de prise de rendez-vous en cours de développement")
-                          }}
-                        >
-                          Prendre rendez-vous
-                          <ChevronRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </TabsContent>
+            </motion.div>
 
-            <TabsContent value="list" className="mt-0">
-              {filteredCentres.length > 0 ? (
-                <motion.div
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                >
-                  {filteredCentres.map((centre) => (
-                    <motion.div
-                      key={centre.id}
-                      variants={fadeIn}
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Card className="h-full border-0 shadow-lg dark:shadow-indigo-900/10 hover:shadow-xl transition-all duration-300">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-xl flex items-center">
-                                <Building2 className="h-5 w-5 mr-2 text-indigo-600" />
-                                {centre.name}
-                              </CardTitle>
-                              <CardDescription className="flex items-start mt-1">
-                                <MapPin className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0 text-gray-400" />
-                                {centre.address}
-                              </CardDescription>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div className="flex items-start">
-                                <Phone className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-indigo-600" />
-                                <span>{centre.phone}</span>
-                              </div>
-                              <div className="flex items-start">
-                                <Clock className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-indigo-600" />
-                                <span>{centre.hours}</span>
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">Services:</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {centre.services.map((service, index) => (
-                                  <span
-                                    key={index}
-                                    className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-xs px-2 py-1 rounded-full"
-                                  >
-                                    {service}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-400 dark:hover:bg-indigo-950"
-                                onClick={() =>
-                                  window.open(
-                                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                      centre.address,
-                                    )}`,
-                                    "_blank",
-                                  )
-                                }
-                              >
-                                Voir sur Google Maps
-                                <ExternalLink className="ml-2 h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
-                                onClick={() => {
-                                  // Simulate booking appointment
-                                  alert("Fonctionnalité de prise de rendez-vous en cours de développement")
-                                }}
-                              >
-                                Prendre rendez-vous
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              ) : (
-                <Card className="border-0 shadow-lg dark:shadow-indigo-900/10">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <div className="rounded-full bg-indigo-100 dark:bg-indigo-900/30 p-4 mb-4">
-                      <Info className="h-8 w-8 text-indigo-600" />
+            {selectedCentre && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mt-8"
+              >
+                <CentreCard centre={filteredCentres.find((c) => c.id === selectedCentre)!} index={0} />
+              </motion.div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="list" className="mt-0">
+            {filteredCentres.length > 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+              >
+                {filteredCentres.map((centre, index) => (
+                  <CentreCard key={centre.id} centre={centre} index={index} />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <div className="rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-6 mb-6">
+                      <Info className="h-12 w-12 text-indigo-600" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Aucun centre trouvé</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-md">
-                      Aucun centre ne correspond à votre recherche. Essayez d'élargir vos critères ou de rechercher une
-                      autre ville.
+                    <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Aucun centre trouvé</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-center mb-8 max-w-md leading-relaxed">
+                      Aucun centre ne correspond à votre recherche. Essayez de rechercher dans une autre région du
+                      Niger.
                     </p>
                     <Button
                       onClick={() => setSearchTerm("")}
-                      className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
+                      className="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       Réinitialiser la recherche
                     </Button>
                   </CardContent>
                 </Card>
-              )}
-            </TabsContent>
-          </Tabs>
+              </motion.div>
+            )}
+          </TabsContent>
+        </Tabs>
 
-          <div className="max-w-4xl mx-auto mt-12">
-            <Card className="border-0 shadow-lg dark:shadow-indigo-900/10 bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
-              <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="md:w-2/3">
-                    <h2 className="text-2xl font-bold mb-4">Besoin d'aide pour choisir un centre ?</h2>
-                    <p className="mb-0">
-                      Notre assistant virtuel peut vous aider à trouver le centre le plus adapté à vos besoins et
-                      répondre à toutes vos questions sur le dépistage.
-                    </p>
-                  </div>
-                  <div className="md:w-1/3 flex justify-center md:justify-end">
-                    <Button asChild size="lg" className="rounded-full bg-white text-indigo-700 hover:bg-white/90 px-8">
-                      <Link href="/chatbot">
-                        Discuter avec l'assistant
-                        <ChevronRight className="ml-2 h-5 w-5" />
-                      </Link>
-                    </Button>
-                  </div>
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="max-w-6xl mx-auto mt-16"
+        >
+          <Card className="border-0 shadow-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white overflow-hidden">
+            <CardContent className="relative p-12">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                <div className="lg:w-2/3 text-center lg:text-left">
+                  <h2 className="text-3xl font-bold mb-4">Besoin d'aide pour choisir un centre ?</h2>
+                  <p className="text-xl opacity-90 leading-relaxed">
+                    Notre assistant virtuel peut vous aider à trouver le centre le plus proche de votre région, répondre
+                    à vos questions sur le dépistage et vous orienter vers les services adaptés au Niger.
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="lg:w-1/3 flex justify-center lg:justify-end">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="rounded-2xl bg-white text-indigo-700 hover:bg-white/90 px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+                  >
+                    <Link href="/chatbot">
+                      Discuter avec l'assistant
+                      <ChevronRight className="ml-2 h-6 w-6" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
     </div>
