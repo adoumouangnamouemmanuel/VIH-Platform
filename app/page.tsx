@@ -45,21 +45,21 @@ export default function Home() {
       title: "Dépistage VIH accessible et confidentiel",
       description:
         "Prenez soin de votre santé avec un accès facile aux informations et aux centres de dépistage près de chez vous.",
-      image: "/placeholder.svg?height=600&width=800",
+      image: "hiv.jpg",
       color: "from-violet-600 to-indigo-700",
     },
     {
       title: "Suivi personnalisé et sécurisé",
       description:
         "Recevez vos résultats en ligne et bénéficiez d'un accompagnement adapté à votre situation en toute confidentialité.",
-      image: "/placeholder.svg?height=600&width=800",
+      image: "hiv.jpg",
       color: "from-teal-500 to-emerald-600",
     },
     {
       title: "Informations fiables et actualisées",
       description:
         "Accédez à des ressources éducatives vérifiées sur le VIH, sa prévention et les traitements disponibles.",
-      image: "/placeholder.svg?height=600&width=800",
+      image: "hiv.jpg",
       color: "from-blue-600 to-cyan-600",
     },
   ]
@@ -81,7 +81,7 @@ export default function Home() {
                   className="absolute inset-0 w-full h-full"
                 >
                   <div
-                    className={`absolute inset-0 bg-gradient-to-r ${slide.color} opacity-90 z-10`}
+                    className={`absolute inset-0 bg-gradient-to-r ${slide.color} opacity-80 z-10`}
                     style={{ mixBlendMode: "multiply" }}
                   ></div>
                   <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center opacity-40"></div>
@@ -125,7 +125,7 @@ export default function Home() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-white text-indigo-700 hover:bg-white/20 text-lg px-8 py-6 rounded-full"
+                  className="border-white text-white hover:bg-white/20 text-lg px-8 py-6 rounded-full"
                 >
                   <Link href="/centres">Trouver un centre</Link>
                 </Button>
@@ -151,7 +151,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="hidden lg:block"
             >
-              <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative h-[500px] w-full rounded-2xl overflow-hidden shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
                 <Image src="/placeholder.svg?height=1000&width=800" alt="Dépistage VIH" fill className="object-cover" />
               </div>
