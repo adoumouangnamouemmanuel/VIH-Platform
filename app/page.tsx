@@ -125,7 +125,7 @@ export default function Home() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white/20 text-lg px-8 py-6 rounded-full"
+                  className="border-white text-indigo-700 hover:bg-white/20 text-lg px-8 py-6 rounded-full"
                 >
                   <Link href="/centres">Trouver un centre</Link>
                 </Button>
@@ -322,7 +322,7 @@ export default function Home() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white/20 text-lg px-8 py-6 rounded-full"
+                className="border-white text-indigo-700 hover:bg-white/20 text-lg px-8 py-6 rounded-full"
               >
                 <Link href="/centres">Explorer les centres</Link>
               </Button>
