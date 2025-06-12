@@ -168,7 +168,7 @@ export default function Navbar() {
                 : "text-gray-700 hover:text-indigo-400 dark:text-gray-200 dark:hover:text-white",
             )}
           >
-            <Link href="/connexion">
+            <Link href="/auth/connexion">
               <User className="h-4 w-4 mr-2" />
               Connexion
             </Link>
