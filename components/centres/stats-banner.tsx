@@ -13,7 +13,7 @@ const stats = [
   },
   {
     icon: Users,
-    value: "50+",
+    value: "3+",
     label: "Centres actifs",
     description: "Personnel qualifié",
   },
