@@ -179,7 +179,7 @@ export default function Navbar() {
             size="sm"
             className="hidden md:flex bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 border-0 rounded-full"
           >
-            <Link href="/inscription">Inscription</Link>
+            <Link href="/auth/inscription">Inscription</Link>
           </Button>
 
           <Button
